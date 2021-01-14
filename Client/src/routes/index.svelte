@@ -23,48 +23,47 @@
 
   const { session } = stores<ISession>();
 
-  const sendingInStart = 5000;
-
   let answerGroups: IAnswerGroup[] = [];
   let trainingPairs: Map<
     number,
     { question: string; answer: IAnswer }
   > = new Map<number, { question: string; answer: IAnswer }>();
 
-  let rawQuestions: string = "";
-  let questions: string;
+  let questions: string = "";
+  let loading: boolean;
+
+  const sendingInStart = 5000;
 
   let sendingIn: number = sendingInStart;
   let sendingIntervalId: number;
 
+  const sendingInterval = () => (sendingIn -= 1000);
+
+  const resetSendingInterval = () => {
+    clearInterval(sendingIntervalId);
+    sendingIn = sendingInStart;
+  };
+
+  $: {
+    resetSendingInterval();
+
+    if (questions !== "") {
+      sendingIntervalId = setInterval(sendingInterval, 1000);
+      debounceQuestions(questions);
+    }
+  }
+
   const debounceQuestions = debounce(
-    (rawQuestions: string) => (questions = rawQuestions),
+    (oldQuestions: string) =>
+      questions === oldQuestions && loadData(oldQuestions),
     sendingInStart
   );
 
-  const sendingInterval = () => (sendingIn -= 1000);
+  const loadData = async (newQuestions: string) => {
+    questions = "";
+    loading = true;
 
-  $: if (questions !== rawQuestions) {
-    clearInterval(sendingIntervalId);
-    sendingIn = sendingInStart;
-    questions = undefined;
-
-    if (rawQuestions !== "") {
-      sendingIntervalId = setInterval(sendingInterval, 1000);
-
-      debounceQuestions(rawQuestions);
-    }
-  } else {
-    clearInterval(sendingIntervalId);
-    sendingIn = sendingInStart;
-
-    loadData();
-  }
-
-  const loadData = async () => {
-    rawQuestions = "";
-
-    for (const question of questions.split(/\r?\n/).reverse()) {
+    for (const question of newQuestions.split(/\r?\n/).reverse()) {
       const response = await wretch($session.qnaMaker.endpoint)
         .auth($session.qnaMaker.auth)
         .post({
@@ -91,7 +90,7 @@
       ];
     }
 
-    questions = undefined;
+    loading = false;
   };
 
   let copied: HTMLDivElement;
@@ -110,11 +109,9 @@
     temporaryElement.textContent = event.currentTarget.textContent;
 
     event.currentTarget.parentElement.appendChild(temporaryElement);
-
     temporaryElement.focus();
     document.execCommand("selectAll");
     document.execCommand("copy");
-
     event.currentTarget.parentElement.removeChild(temporaryElement);
 
     if (copiedTimeoutId !== undefined) {
@@ -160,16 +157,16 @@
   <div class="questions">
     <div class="sticky">
       <p>{$t("questionsInTheBox")}</p>
-      {#if questions !== undefined}
+      {#if loading}
         <div class="loading"><Loading /></div>
       {:else}
-        <textarea bind:value={rawQuestions} />
+        <textarea bind:value={questions} />
       {/if}
       <div>
         <button
-          disabled={rawQuestions === ""}
-          on:click={() => (questions = rawQuestions)}>
-          {#if rawQuestions === "" || sendingIn > 3000}
+          disabled={questions === ""}
+          on:click={() => loadData(questions)}>
+          {#if questions === "" || sendingIn > 3000}
             {$t("ask")}
           {:else}
             {`${$t("askingIn")} ${sendingIn / 1000} ${$t("askingInSeconds")}`}
@@ -288,7 +285,7 @@
   }
 
   .questions button:hover {
-    background: #73ccff;
+    background: #0cb2ff;
     cursor: help;
   }
 
@@ -327,7 +324,7 @@
   }
 
   .answers .answer:hover {
-    background: #73ccff;
+    background: #6cd6ff;
     opacity: 1;
     cursor: copy;
   }
