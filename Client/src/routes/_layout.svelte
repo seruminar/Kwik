@@ -1,31 +1,3 @@
-<script context="module" lang="ts">
-  import type { Preload } from "@sapper/app";
-  import type { ISession } from "../shared/session";
-
-  export const preload: Preload<{}, ISession> = async function (
-    this,
-    page,
-    session
-  ) {
-    session.title = "Kwik";
-
-    session.translations = {
-      en_us: {
-        translation: {
-          questionsInTheBox: "Put questions in the box, one question per line.",
-          ask: "Ask",
-          askingIn: "Asking in",
-          askingInSeconds: "seconds...",
-          clickToCopy: "Click an answer to copy it.",
-          copied: "Copied!",
-        },
-      },
-    };
-
-    return {};
-  };
-</script>
-
 <svelte:head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
@@ -36,6 +8,12 @@
 <slot />
 
 <style>
+  :global(html) {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
   :global(body) {
     margin: 0;
     font-family: Roboto, -apple-system, BlinkMacSystemFont, Segoe UI, Oxygen,
@@ -43,12 +21,17 @@
     font-size: 14px;
     line-height: 1.5;
     color: #333;
+    display: flex;
+    flex: 1;
   }
 
   :global(main) {
     position: relative;
     margin: 0 auto;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
   }
 
   :global(h1),
@@ -79,6 +62,14 @@
   @media (max-width: 1600px) {
     :global(section) {
       max-width: 800px;
+      margin: 0 auto !important;
+    }
+  }
+
+  @media (max-width: 900px) {
+    :global(section) {
+      flex-direction: column !important;
+      margin: 0 auto !important;
     }
   }
 
