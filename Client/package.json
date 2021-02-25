@@ -10,9 +10,12 @@
     "validate": "svelte-check --ignore src/node_modules/@sapper"
   },
   "dependencies": {
+    "@kentico/kontent-delivery": "^10.1.0",
+    "@rollup/plugin-json": "^4.1.0",
     "compression": "^1.7.1",
     "dotenv": "^8.2.0",
     "i18next": "^19.8.4",
+    "json-2-csv": "^3.10.2",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
     "polka": "next",

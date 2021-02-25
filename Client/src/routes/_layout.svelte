@@ -26,31 +26,13 @@
   };
 </script>
 
-<script lang="ts">
-  import { stores } from "@sapper/app";
-  import { fly } from "svelte/transition";
-  import { onMount } from "svelte";
-
-  const { session } = stores<ISession>();
-
-  let ready = false;
-
-  onMount(() => (ready = true));
-</script>
-
 <svelte:head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <meta name="theme-color" content="#333333" />
   <link rel="icon" type="image/png" href="favicon.png" />
-  <title>{$session.title}</title>
 </svelte:head>
 
-{#if ready}
-  <h1 in:fly={{ x: 100 }}>{$session.title}</h1>
-{:else}
-  <h1>&nbsp;</h1>
-{/if}
 <slot />
 
 <style>
@@ -79,13 +61,6 @@
     line-height: 1.2;
   }
 
-  h1 {
-    font-size: 5em;
-    text-transform: uppercase;
-    font-weight: 700;
-    margin: 0 0 0.5em 0.5em;
-  }
-
   :global(a) {
     color: inherit;
   }
@@ -104,12 +79,6 @@
   @media (max-width: 1600px) {
     :global(section) {
       max-width: 800px;
-    }
-  }
-
-  @media (max-width: 800px) {
-    h1 {
-      font-size: 3em;
     }
   }
 

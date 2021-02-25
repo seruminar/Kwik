@@ -7,6 +7,7 @@
   import Loading from "../shared/loading.svelte";
   import type { ISession } from "../shared/session";
   import type { IQnASearchResultList } from "../shared/qnaMaker";
+  import { onMount } from "svelte";
 
   interface IAnswerGroup {
     question: string;
@@ -22,6 +23,9 @@
   }
 
   const { session } = stores<ISession>();
+
+  let ready = false;
+  onMount(() => (ready = true));
 
   let answerGroups: IAnswerGroup[] = [];
   let trainingPairs: Map<
@@ -63,7 +67,10 @@
     questions = "";
     loading = true;
 
-    for (const question of newQuestions.split(/\r?\n/).reverse()) {
+    for (const question of newQuestions
+      .split(/\r?\n/)
+      .filter((line) => line !== "")
+      .reverse()) {
       const response = await wretch($session.qnaMaker.endpoint)
         .auth($session.qnaMaker.auth)
         .post({
@@ -153,6 +160,15 @@
   const t = translate($session.translations);
 </script>
 
+<svelte:head>
+  <title>{$session.title}</title>
+</svelte:head>
+
+{#if ready}
+  <h1 in:fly={{ x: 100 }}>{$session.title}</h1>
+{:else}
+  <h1>&nbsp;</h1>
+{/if}
 <section>
   <div class="questions">
     <div class="sticky">
@@ -202,12 +218,19 @@
 </div>
 
 <style>
+  h1 {
+    font-size: 5em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin: 0 0 0.5em 0.5em;
+  }
+
   section {
     flex-direction: row;
   }
 
   .copied {
-    position: absolute;
+    position: fixed;
     pointer-events: none;
     display: none;
     transform: translate(-50%, -50%);
@@ -330,5 +353,8 @@
   }
 
   @media (max-width: 800px) {
+    h1 {
+      font-size: 3em;
+    }
   }
 </style>
