@@ -1,8 +1,13 @@
 import { writable } from 'svelte/store';
 
-export const localStore = <T>(key: string, defaultValue?: T) => {
+export const localStorage = <T>(key: string, defaultValue?: T) => {
   if (typeof window !== "undefined") {
-    defaultValue = JSON.parse(localStorage.getItem(key));
+    if (
+      defaultValue === undefined ||
+      window.localStorage.getItem(key) !== null
+    ) {
+      defaultValue = JSON.parse(window.localStorage.getItem(key));
+    }
 
     window.addEventListener(
       "storage",
@@ -16,10 +21,10 @@ export const localStore = <T>(key: string, defaultValue?: T) => {
     subscribe,
     set: (value: T) =>
       typeof window !== "undefined" &&
-      localStorage.setItem(key, JSON.stringify(value)),
+      window.localStorage.setItem(key, JSON.stringify(value)),
     update: (updater: (value: T) => T) => {
       if (typeof window !== "undefined") {
-        const value = JSON.parse(localStorage.getItem(key));
+        const value = JSON.parse(window.localStorage.getItem(key));
 
         set(updater(value));
       }
